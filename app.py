@@ -105,9 +105,18 @@ def generar_botones_webmail(destinatarios, asunto, cuerpo):
 st.set_page_config(page_title="Exige Justicia", page_icon="⚖️", layout="centered")
 st.title("✉️ Exige Justicia: Contacta a tus Representantes")
 st.markdown("Pide a los Legisladores de tu estado que voten en contra de la Ley de Violencia Vicaria y el Derecho Penal de Autor.")
-
 st.warning("📱 **Aviso para celulares:** Si abriste este enlace desde Facebook, WhatsApp o Twitter, es posible que los botones de correo no funcionen por sus bloqueos de seguridad. Si eso pasa, toca los **3 puntitos (arriba a la derecha) y elige 'Abrir en el navegador (Chrome/Safari)'**, o usa las cajitas grises de cada legislador para copiar el correo y el teléfono manualmente.")
 st.markdown("---")
+
+# --- MODO FANTASMA: OCULTAR RASTROS DE STREAMLIT Y GITHUB ---
+st.markdown("""
+    <style>
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    header {visibility: hidden;}
+    </style>
+    """, unsafe_allow_html=True)
+# ------------------------------------------------------------
 
 @st.cache_data
 def cargar_bases():
