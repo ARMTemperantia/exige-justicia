@@ -3,7 +3,36 @@ import pandas as pd
 import urllib.parse
 import re
 
-# --- 1. DICCIONARIO DE CÓDIGOS POSTALES ---
+# --- 1. CONFIGURACIÓN E INICIO ---
+st.set_page_config(page_title="Exige Justicia", page_icon="⚖️", layout="centered")
+
+# --- MODO FANTASMA NIVEL 3: CAMUFLAJE TOTAL ---
+st.markdown("""
+    <style>
+    /* 1. Ocultar el menú superior (hamburguesa, avatar, header completo) */
+    [data-testid="stHeader"] {visibility: hidden !important;}
+    [data-testid="stToolbar"] {visibility: hidden !important;}
+    [data-testid="stDecoration"] {visibility: hidden !important;}
+    
+    /* 2. Ocultar el pie de página predeterminado de Streamlit */
+    footer {visibility: hidden !important;}
+    [data-testid="stFooter"] {visibility: hidden !important;}
+    
+    /* 3. Ocultar el botón de 'Deploy' y Manage app */
+    .stDeployButton {display: none !important;}
+    
+    /* 4. Ocultar las insignias flotantes de 'Hosted by Streamlit' y 'Created by' */
+    .viewerBadge_container__1QSob {display: none !important;}
+    .viewerBadge_link__1S137 {display: none !important;}
+    div[class^="viewerBadge_"] {display: none !important;}
+    
+    /* 5. Ocultar cualquier enlace a la nube de Streamlit */
+    a[href^="https://streamlit.io/cloud"] {display: none !important;}
+    </style>
+    """, unsafe_allow_html=True)
+# ----------------------------------------------
+
+# --- 2. DICCIONARIO DE CÓDIGOS POSTALES ---
 def obtener_estado_por_cp(cp):
     prefijo = cp[:2]
     mapa_estados = {
@@ -30,7 +59,7 @@ def obtener_estado_por_cp(cp):
     }
     return mapa_estados.get(prefijo, None)
 
-# --- 2. MOTOR DE PROTOCOLO Y GÉNERO ---
+# --- 3. MOTOR DE PROTOCOLO Y GÉNERO ---
 def formatear_y_obtener_saludo(nombre_crudo, cargo="Senador"):
     nombre_str = str(nombre_crudo).strip()
     if ',' in nombre_str:
@@ -73,7 +102,7 @@ def formatear_y_obtener_saludo(nombre_crudo, cargo="Senador"):
         
     return nombre_natural, saludo, etiqueta
 
-# --- 3. GENERADOR DE BOTONES WEBMAIL ---
+# --- 4. GENERADOR DE BOTONES WEBMAIL ---
 def generar_botones_webmail(destinatarios, asunto, cuerpo):
     su = urllib.parse.quote(asunto)
     bd = urllib.parse.quote(cuerpo)
@@ -101,22 +130,12 @@ def generar_botones_webmail(destinatarios, asunto, cuerpo):
     """
     return html_botones
 
-# --- 4. CONFIGURACIÓN E INICIO ---
-st.set_page_config(page_title="Exige Justicia", page_icon="⚖️", layout="centered")
+# --- 5. INTERFAZ GRÁFICA PRINCIPAL ---
 st.title("✉️ Exige Justicia: Contacta a tus Representantes")
 st.markdown("Pide a los Legisladores de tu estado que voten en contra de la Ley de Violencia Vicaria y el Derecho Penal de Autor.")
+
 st.warning("📱 **Aviso para celulares:** Si abriste este enlace desde Facebook, WhatsApp o Twitter, es posible que los botones de correo no funcionen por sus bloqueos de seguridad. Si eso pasa, toca los **3 puntitos (arriba a la derecha) y elige 'Abrir en el navegador (Chrome/Safari)'**, o usa las cajitas grises de cada legislador para copiar el correo y el teléfono manualmente.")
 st.markdown("---")
-
-# --- MODO FANTASMA: OCULTAR RASTROS DE STREAMLIT Y GITHUB ---
-st.markdown("""
-    <style>
-    #MainMenu {visibility: hidden;}
-    footer {visibility: hidden;}
-    header {visibility: hidden;}
-    </style>
-    """, unsafe_allow_html=True)
-# ------------------------------------------------------------
 
 @st.cache_data
 def cargar_bases():
@@ -135,7 +154,7 @@ df_senadores, df_diputados = cargar_bases()
 REGEX_NOMBRE = r"^[A-Za-zÁÉÍÓÚáéíóúÑñÜü\s]+$"
 REGEX_CP = r"^\d{5}$"
 
-# --- 5. INTERFAZ CON FORMULARIO ---
+# --- 6. FORMULARIO CIUDADANO ---
 st.markdown("### 1. Completa tus datos")
 st.info("💡 **Instrucciones:** Tu nombre debe contener únicamente letras y espacios. El Código Postal debe ser exactamente de 5 números.")
 st.caption("🔒 **Aviso de Privacidad y Seguridad:** Los datos ingresados en este formulario **NO se guardan, NO se rastrean y NO se almacenan** en ninguna base de datos. Únicamente se utilizan de forma temporal en tu propio dispositivo para localizar a tus legisladores y pre-llenar la firma de tu correo (la cual podrás editar libremente en tu aplicación de correo antes de enviarlo).")
@@ -149,7 +168,7 @@ with st.form("formulario_contacto"):
         
     submit_button = st.form_submit_button("Buscar a mis Representantes")
 
-# --- 6. LÓGICA CENTRAL ---
+# --- 7. LÓGICA DE PROCESAMIENTO ---
 if submit_button:
     nombre = nombre.strip()
     cp = cp.strip()
@@ -213,7 +232,6 @@ if submit_button:
                                 sen_correo = str(row.get('senator_details_email', '')).strip()
                                 sen_comisiones = str(row.get('Comisiones', 'diversas comisiones legislativas'))
                                 
-                                # Lógica para saber si tiene correo válido
                                 tiene_correo_sen = bool(sen_correo and sen_correo.lower() != 'nan')
                                 pronombre_sen = "Esta" if etiqueta_sen == "Senadora" else "Este"
                                 
@@ -291,7 +309,6 @@ if submit_button:
                                 dip_correo = str(row.get('Correo', '')).strip()
                                 dip_comisiones = str(row.get('Comisiones', 'diversas comisiones legislativas'))
                                 
-                                # Lógica para saber si tiene correo válido
                                 tiene_correo_dip = bool(dip_correo and dip_correo.lower() != 'nan')
                                 pronombre_dip = "Esta" if etiqueta_dip == "Diputada" else "Este"
                                 
@@ -311,11 +328,8 @@ if submit_button:
                                 with col_tel:
                                     st.markdown("📞 **Conmutador San Lázaro:**")
                                     st.code("55 5036 0000", language=None)
-                                    
-                                    # --- Magia de Género y Lenguaje Inclusivo ---
                                     articulo = "de la" if etiqueta_dip == "Diputada" else "del"
                                     st.caption(f"*(Pide que te comuniquen a la oficina {articulo} {etiqueta_dip} {nombre_natural})*")
-                                    # --------------------------------------------
                                 
                                 if tiene_correo_dip:
                                     st.markdown("*(Copia este mensaje si los botones de envío fallan)*")
