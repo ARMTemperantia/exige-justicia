@@ -30,17 +30,14 @@ def obtener_estado_por_cp(cp):
     }
     return mapa_estados.get(prefijo, None)
 
-# --- 2. MOTOR DE PROTOCOLO Y GÉNERO PARA NOMBRES MEXICANOS ---
+# --- 2. MOTOR DE PROTOCOLO Y GÉNERO ---
 def formatear_y_obtener_saludo(nombre_crudo, cargo="Senador"):
     nombre_str = str(nombre_crudo).strip()
-    
-    # 1. Enderezar el nombre para que se lea natural (Senadores vienen con coma)
     if ',' in nombre_str:
         partes = nombre_str.split(',', 1)
         nombre_natural = f"{partes[1].strip()} {partes[0].strip()}".title()
         nombres_reales = partes[1].strip().lower()
     else:
-        # Diputados vienen sin coma, aplicamos Title Case para estética
         nombre_natural = nombre_str.title()
         nombres_reales = nombre_str.lower()
         
@@ -48,54 +45,25 @@ def formatear_y_obtener_saludo(nombre_crudo, cargo="Senador"):
     primer_nombre = palabras[0] if palabras else ""
     ultimo_nombre = palabras[-1] if palabras else ""
     
-    # --- DICCIONARIOS DE EXCEPCIONES ---
     femeninos_fuertes = {
-        'carmen', 'rosario', 'guadalupe', 'beatriz', 'dolores', 'consuelo', 
-        'luz', 'paz', 'irene', 'ivonne', 'berenice', 'dulce', 'eunice', 
-        'nayeli', 'xóchitl', 'xochitl', 'citlalli', 'ruth', 'edith', 'margoth', 
-        'simey', 'mayuli', 'lilly', 'sasil', 'marisol', 'raquel', 'isabel', 
-        'leonor', 'ester', 'esther', 'noemí', 'noemi', 'abigail', 'miriam', 
-        'evelyn', 'karem', 'karen', 'sharon', 'belén', 'belen', 'yazmín', 
-        'yazmin', 'jazmín', 'jazmin', 'aylín', 'aylin', 'aidé', 'aide', 
-        'itzel', 'maribel', 'anabell', 'lizeth', 'ivette', 'mely', 'janet', 
-        'janeth', 'rocío', 'rocio', 'socorro', 'concepción', 'asunción', 
-        'pilar', 'soledad', 'inés', 'ines', 'sarahí', 'sarahi', 'areli', 
-        'arelí', 'rubí', 'rubi', 'vianey', 'araceli', 'aracely', 'zaria', 'juana'
+        'carmen', 'rosario', 'guadalupe', 'beatriz', 'dolores', 'consuelo', 'luz', 'paz', 'irene', 'ivonne', 'berenice', 'dulce', 'eunice', 'nayeli', 'xóchitl', 'xochitl', 'citlalli', 'ruth', 'edith', 'margoth', 'simey', 'mayuli', 'lilly', 'sasil', 'marisol', 'raquel', 'isabel', 'leonor', 'ester', 'esther', 'noemí', 'noemi', 'abigail', 'miriam', 'evelyn', 'karem', 'karen', 'sharon', 'belén', 'belen', 'yazmín', 'yazmin', 'jazmín', 'jazmin', 'aylín', 'aylin', 'aidé', 'aide', 'itzel', 'maribel', 'anabell', 'lizeth', 'ivette', 'mely', 'janet', 'janeth', 'rocío', 'rocio', 'socorro', 'concepción', 'asunción', 'pilar', 'soledad', 'inés', 'ines', 'sarahí', 'sarahi', 'areli', 'arelí', 'rubí', 'rubi', 'vianey', 'araceli', 'aracely', 'zaria', 'juana'
     }
-    
     apellidos_con_a = {
-        'garcía', 'garcia', 'mora', 'lara', 'nava', 'peña', 'pena', 'ochoa', 'ayala', 'pineda', 
-        'estrada', 'rivera', 'carmona', 'esparza', 'loera', 'mendoza', 'mejía', 'mejia', 
-        'padilla', 'castañeda', 'castaneda', 'quintana', 'arriaga', 'correa', 'guevara', 
-        'tapia', 'valdivia', 'fonseca', 'munguía', 'munguia', 'baeza', 'balderrama', 
-        'cabrera', 'zepeda', 'cepeda', 'figueroa', 'gamboa', 'herrera', 'medina', 
-        'miranda', 'molina', 'nájera', 'najera', 'ojeda', 'pantoja', 'quiroga', 'rocha', 
-        'segovia', 'sosa', 'talavera', 'urquiza', 'varela', 'vega', 'villanueva', 'zavala', 
-        'zaragoza', 'zurita', 'saldaña', 'saldana', 'acosta', 'barrera', 'escalera', 'espinosa', 
-        'espinoza', 'garza', 'guerra', 'hinojosa', 'macías', 'macias', 'mancera', 'ortega', 
-        'ruvalcaba', 'silva', 'téllez', 'tellez'
+        'garcía', 'garcia', 'mora', 'lara', 'nava', 'peña', 'pena', 'ochoa', 'ayala', 'pineda', 'estrada', 'rivera', 'carmona', 'esparza', 'loera', 'mendoza', 'mejía', 'mejia', 'padilla', 'castañeda', 'castaneda', 'quintana', 'arriaga', 'correa', 'guevara', 'tapia', 'valdivia', 'fonseca', 'munguía', 'munguia', 'baeza', 'balderrama', 'cabrera', 'zepeda', 'cepeda', 'figueroa', 'gamboa', 'herrera', 'medina', 'miranda', 'molina', 'nájera', 'najera', 'ojeda', 'pantoja', 'quiroga', 'rocha', 'segovia', 'sosa', 'talavera', 'urquiza', 'varela', 'vega', 'villanueva', 'zavala', 'zaragoza', 'zurita', 'saldaña', 'saldana', 'acosta', 'barrera', 'escalera', 'espinosa', 'espinoza', 'garza', 'guerra', 'hinojosa', 'macías', 'macias', 'mancera', 'ortega', 'ruvalcaba', 'silva', 'téllez', 'tellez'
     }
     
     es_mujer = False
-    
-    # Regla 1: Contiene nombres de la lista fuerte de mujeres
     if any(fem in palabras for fem in femeninos_fuertes):
         es_mujer = True
-        
-    # Regla 2: La primera o última palabra terminan en 'A' y NO son un apellido engañoso
     elif primer_nombre.endswith('a') and primer_nombre not in apellidos_con_a:
         es_mujer = True
     elif ultimo_nombre.endswith('a') and ultimo_nombre not in apellidos_con_a:
         es_mujer = True
         
-    # Regla 3: Descartar "José" y "Jesús" que hayan activado un falso positivo
-    if 'josé' in palabras or 'jose' in palabras:
-        es_mujer = False
+    if 'josé' in palabras or 'jose' in palabras: es_mujer = False
     if 'jesús' in palabras or 'jesus' in palabras:
-        if 'lucía' not in palabras and 'lucia' not in palabras:
-            es_mujer = False
+        if 'lucía' not in palabras and 'lucia' not in palabras: es_mujer = False
             
-    # --- ASIGNACIÓN DE PROTOCOLO ---
     if cargo == "Senador":
         saludo = "Estimada Senadora" if es_mujer else "Estimado Senador"
         etiqueta = "Senadora" if es_mujer else "Senador"
@@ -110,7 +78,6 @@ def generar_botones_webmail(destinatarios, asunto, cuerpo):
     su = urllib.parse.quote(asunto)
     bd = urllib.parse.quote(cuerpo)
     
-    # Enlaces universales (100% seguros y a prueba de bloqueos móviles)
     gmail = f"https://mail.google.com/mail/?view=cm&fs=1&to={destinatarios}&su={su}&body={bd}"
     outlook_web = f"https://outlook.live.com/mail/0/deeplink/compose?to={destinatarios}&subject={su}&body={bd}"
     yahoo = f"https://compose.mail.yahoo.com/?to={destinatarios}&subject={su}&body={bd}"
@@ -128,7 +95,7 @@ def generar_botones_webmail(destinatarios, asunto, cuerpo):
             <button style="background-color: #6001D2; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-weight: bold;">📧 Yahoo</button>
         </a>
         <a href="{default}" style="text-decoration: none;">
-            <button style="background-color: #333333; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-weight: bold;">📱 Correo de tu Celular</button>
+            <button style="background-color: #333333; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-weight: bold;">📱 App de Correo</button>
         </a>
     </div>
     """
@@ -138,6 +105,9 @@ def generar_botones_webmail(destinatarios, asunto, cuerpo):
 st.set_page_config(page_title="Exige Justicia", page_icon="⚖️", layout="centered")
 st.title("✉️ Exige Justicia: Contacta a tus Representantes")
 st.markdown("Pide a los Legisladores de tu estado que voten en contra de la Ley de Violencia Vicaria y el Derecho Penal de Autor.")
+
+st.warning("📱 **Aviso para celulares:** Si abriste este enlace desde Facebook, WhatsApp o Twitter, es posible que los botones de correo no funcionen por sus bloqueos de seguridad. Si eso pasa, toca los **3 puntitos (arriba a la derecha) y elige 'Abrir en el navegador (Chrome/Safari)'**, o usa las cajitas grises de cada legislador para copiar el correo y el teléfono manualmente.")
+st.markdown("---")
 
 @st.cache_data
 def cargar_bases():
@@ -153,13 +123,13 @@ def cargar_bases():
 
 df_senadores, df_diputados = cargar_bases()
 
-# Validadores Regex de Seguridad
 REGEX_NOMBRE = r"^[A-Za-zÁÉÍÓÚáéíóúÑñÜü\s]+$"
 REGEX_CP = r"^\d{5}$"
 
 # --- 5. INTERFAZ CON FORMULARIO ---
 st.markdown("### 1. Completa tus datos")
 st.info("💡 **Instrucciones:** Tu nombre debe contener únicamente letras y espacios. El Código Postal debe ser exactamente de 5 números.")
+st.caption("🔒 **Aviso de Privacidad y Seguridad:** Los datos ingresados en este formulario **NO se guardan, NO se rastrean y NO se almacenan** en ninguna base de datos. Únicamente se utilizan de forma temporal en tu propio dispositivo para localizar a tus legisladores y pre-llenar la firma de tu correo (la cual podrás editar libremente en tu aplicación de correo antes de enviarlo).")
 
 with st.form("formulario_contacto"):
     col1, col2 = st.columns(2)
@@ -218,23 +188,58 @@ if submit_button:
                         asunto_masivo_sen = "Petición ciudadana urgente: Rechazo a la Ley de Violencia Vicaria"
                         cuerpo_masivo_sen = f"Estimados Senadores y Senadoras por el estado de {estado_detectado},\n\nEspero que este mensaje les encuentre muy bien. Me dirijo a ustedes en mi calidad de ciudadano(a) de su estado.\n\nReconociendo su labor en la Cámara Alta y su participación en las comisiones legislativas, les solicito de la manera más respetuosa su intervención conjunta para que NO se apruebe (y se promueva la derogación) de la llamada legislación sobre violencia vicaria.\n\nAprobar una legislación que tipifica delitos de manera asimétrica, excluyendo a los hombres de la posibilidad de denunciar y acceder a la misma protección, nos devuelve a la figura del 'derecho penal de autor', vulnerando la igualdad ante la ley consagrada en nuestra Constitución.\n\nLes solicito que desde el Senado se vote en contra de medidas que comprometan la certidumbre jurídica de nuestro país.\n\nAtentamente,\n{nombre}\nC.P. {cp}"
                         
-                        st.text_area("Vista previa del mensaje masivo:", value=cuerpo_masivo_sen, height=200, disabled=True)
-                        st.markdown("**Elige tu proveedor para enviar a todos:**")
+                        st.markdown("**1. Correos a enviar:** *(Cópialos si quieres enviar el correo manualmente)*")
+                        st.code(cadena_correos_sen, language=None)
+                        
+                        st.markdown("**2. Mensaje sugerido:** *(Cópialo si los botones de abajo fallan)*")
+                        st.code(cuerpo_masivo_sen, language=None)
+                        
+                        st.markdown("**3. Enviar automáticamente:**")
                         st.markdown(generar_botones_webmail(cadena_correos_sen, asunto_masivo_sen, cuerpo_masivo_sen), unsafe_allow_html=True)
                         
-                        # Acordeón de individuales
-                        with st.expander("Ver correos individualizados por Senador (Opcional)"):
+                        with st.expander("Ver opciones de contacto individual por Senador"):
                             for _, row in senadores_filtrados.iterrows():
                                 sen_nombre_crudo = str(row.get('senator_details_name', ''))
                                 nombre_natural, saludo_sen, etiqueta_sen = formatear_y_obtener_saludo(sen_nombre_crudo, "Senador")
-                                sen_correo = str(row.get('senator_details_email', ''))
+                                sen_correo = str(row.get('senator_details_email', '')).strip()
                                 sen_comisiones = str(row.get('Comisiones', 'diversas comisiones legislativas'))
+                                
+                                # Lógica para saber si tiene correo válido
+                                tiene_correo_sen = bool(sen_correo and sen_correo.lower() != 'nan')
+                                pronombre_sen = "Esta" if etiqueta_sen == "Senadora" else "Este"
                                 
                                 cuerpo_ind_sen = f"{saludo_sen} {nombre_natural},\n\nComo representante por el estado de {estado_detectado} y desde su importante labor como integrante de las comisiones de {sen_comisiones}, me dirijo a usted con profunda preocupación ciudadana.\n\nLe solicito respetuosamente su voto en contra (y la promoción de la derogación) de la legislación sobre violencia vicaria. Esta ley tipifica delitos de manera asimétrica, aplicando un 'derecho penal de autor' que castiga a la persona por su sexo y vulnera la igualdad ante la ley garantizada por nuestra Constitución.\n\nConfío en su compromiso con una justicia equitativa para todos los ciudadanos.\n\nAtentamente,\n{nombre}\nC.P. {cp}"
                                 
                                 st.markdown(f"**{etiqueta_sen} {nombre_natural}**")
                                 st.caption(f"🏛️ Comisiones: {sen_comisiones}")
-                                st.markdown(generar_botones_webmail(sen_correo, "Llamado a la Igualdad Constitucional - Violencia Vicaria", cuerpo_ind_sen), unsafe_allow_html=True)
+                                
+                                col_email, col_tel = st.columns(2)
+                                with col_email:
+                                    if tiene_correo_sen:
+                                        st.markdown("📧 **Correo electrónico:**")
+                                        st.code(sen_correo, language=None)
+                                    else:
+                                        st.warning(f"⚠️ {pronombre_sen} {etiqueta_sen} no tiene un correo público registrado.")
+                                        
+                                with col_tel:
+                                    detalles_oficina = str(row.get('senator_details_office_details', ''))
+                                    busqueda_tel = re.search(r'Tel:\s*([\d\s]+).*?Ext:\s*(.*?)(?=\s*Correo:|$)', detalles_oficina)
+                                    if busqueda_tel:
+                                        tel_base = busqueda_tel.group(1).strip()
+                                        extension = busqueda_tel.group(2).strip()
+                                        st.markdown("📞 **Conmutador:**")
+                                        st.code(tel_base, language=None)
+                                        st.markdown("📟 **Extensión:**")
+                                        st.code(extension, language=None)
+                                    else:
+                                        st.markdown("📞 **Teléfono:**")
+                                        st.caption("No disponible")
+                                
+                                if tiene_correo_sen:
+                                    st.markdown("*(Copia este mensaje si los botones de envío fallan)*")
+                                    st.code(cuerpo_ind_sen, language=None)
+                                    st.markdown(generar_botones_webmail(sen_correo, "Llamado a la Igualdad Constitucional - Violencia Vicaria", cuerpo_ind_sen), unsafe_allow_html=True)
+                                
                                 st.divider()
             else:
                 st.error("Base de datos de Senadores no encontrada.")
@@ -260,24 +265,54 @@ if submit_button:
                         asunto_masivo_dip = "Petición ciudadana urgente: Rechazo a la Ley de Violencia Vicaria"
                         cuerpo_masivo_dip = f"Estimados Diputados Federales y Diputadas por el estado de {estado_detectado},\n\nEspero que este mensaje les encuentre muy bien. Me dirijo a ustedes en mi calidad de ciudadano(a) de su estado.\n\nReconociendo su labor legislativa en San Lázaro y su participación en las diversas comisiones, les solicito de la manera más respetuosa su intervención conjunta para que NO se apruebe (y se promueva la derogación) de la llamada legislación sobre violencia vicaria.\n\nAprobar una legislación que tipifica delitos de manera asimétrica, excluyendo a los hombres de la posibilidad de denunciar y acceder a la misma protección, nos devuelve a la figura del 'derecho penal de autor', vulnerando la igualdad ante la ley consagrada en nuestra Constitución.\n\nLes solicito que desde sus curules se vote en contra de medidas que comprometan la certidumbre jurídica de nuestro país.\n\nAtentamente,\n{nombre}\nC.P. {cp}"
                         
-                        st.text_area("Vista previa del mensaje masivo:", value=cuerpo_masivo_dip, height=200, disabled=True, key="preview_dip")
-                        st.markdown("**Elige tu proveedor para enviar a todos:**")
+                        st.markdown("**1. Correos a enviar:** *(Cópialos si quieres enviar el correo manualmente)*")
+                        st.code(cadena_correos_dip, language=None)
+                        
+                        st.markdown("**2. Mensaje sugerido:** *(Cópialo si los botones de abajo fallan)*")
+                        st.code(cuerpo_masivo_dip, language=None)
+                        
+                        st.markdown("**3. Enviar automáticamente:**")
                         st.markdown(generar_botones_webmail(cadena_correos_dip, asunto_masivo_dip, cuerpo_masivo_dip), unsafe_allow_html=True)
                         
-                        # Acordeón de individuales
-                        with st.expander("Ver correos individualizados por Diputado (Opcional)"):
+                        with st.expander("Ver opciones de contacto individual por Diputado"):
                             for _, row in diputados_filtrados.iterrows():
                                 dip_nombre_crudo = str(row.get('Nombre', ''))
                                 nombre_natural, saludo_dip, etiqueta_dip = formatear_y_obtener_saludo(dip_nombre_crudo, "Diputado")
                                 dip_partido = str(row.get('Partido', '')).upper()
-                                dip_correo = str(row.get('Correo', ''))
+                                dip_correo = str(row.get('Correo', '')).strip()
                                 dip_comisiones = str(row.get('Comisiones', 'diversas comisiones legislativas'))
+                                
+                                # Lógica para saber si tiene correo válido
+                                tiene_correo_dip = bool(dip_correo and dip_correo.lower() != 'nan')
+                                pronombre_dip = "Esta" if etiqueta_dip == "Diputada" else "Este"
                                 
                                 cuerpo_ind_dip = f"{saludo_dip} {nombre_natural},\n\nComo representante por el estado de {estado_detectado} y desde su importante labor legislativa como integrante de las comisiones de {dip_comisiones}, me dirijo a usted con profunda preocupación ciudadana.\n\nLe solicito respetuosamente su voto en contra (y la promoción de la derogación) de la legislación sobre violencia vicaria. Esta ley tipifica delitos de manera asimétrica, aplicando un 'derecho penal de autor' que castiga a la persona por su sexo y vulnera la igualdad ante la ley garantizada por el Artículo 4to Constitucional.\n\nConfío en su compromiso con una justicia neutral y equitativa.\n\nAtentamente,\n{nombre}\nC.P. {cp}"
                                 
                                 st.markdown(f"**{etiqueta_dip} {nombre_natural}** ({dip_partido})")
                                 st.caption(f"🏛️ Comisiones: {dip_comisiones}")
-                                st.markdown(generar_botones_webmail(dip_correo, "Llamado a la Igualdad Constitucional - Violencia Vicaria", cuerpo_ind_dip), unsafe_allow_html=True)
+                                
+                                col_email, col_tel = st.columns(2)
+                                with col_email:
+                                    if tiene_correo_dip:
+                                        st.markdown("📧 **Correo electrónico:**")
+                                        st.code(dip_correo, language=None)
+                                    else:
+                                        st.warning(f"⚠️ {pronombre_dip} {etiqueta_dip} no tiene un correo público registrado.")
+                                        
+                                with col_tel:
+                                    st.markdown("📞 **Conmutador San Lázaro:**")
+                                    st.code("55 5036 0000", language=None)
+                                    
+                                    # --- Magia de Género y Lenguaje Inclusivo ---
+                                    articulo = "de la" if etiqueta_dip == "Diputada" else "del"
+                                    st.caption(f"*(Pide que te comuniquen a la oficina {articulo} {etiqueta_dip} {nombre_natural})*")
+                                    # --------------------------------------------
+                                
+                                if tiene_correo_dip:
+                                    st.markdown("*(Copia este mensaje si los botones de envío fallan)*")
+                                    st.code(cuerpo_ind_dip, language=None)
+                                    st.markdown(generar_botones_webmail(dip_correo, "Llamado a la Igualdad Constitucional - Violencia Vicaria", cuerpo_ind_dip), unsafe_allow_html=True)
+                                    
                                 st.divider()
             else:
-                st.info("Base de datos de Diputados no encontrada. Ejecuta el script de extracción primero.")
+                st.info("Base de datos de Diputados no encontrada.")
