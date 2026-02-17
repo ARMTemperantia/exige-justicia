@@ -6,31 +6,32 @@ import re
 # --- 1. CONFIGURACIÓN E INICIO ---
 st.set_page_config(page_title="Exige Justicia", page_icon="⚖️", layout="centered")
 
-# --- MODO FANTASMA NIVEL 3: CAMUFLAJE TOTAL ---
+# --- MODO FANTASMA NIVEL 4: DESTRUCCIÓN DE ENLACES EXTERNOS ---
 st.markdown("""
     <style>
-    /* 1. Ocultar el menú superior (hamburguesa, avatar, header completo) */
-    [data-testid="stHeader"] {visibility: hidden !important;}
-    [data-testid="stToolbar"] {visibility: hidden !important;}
-    [data-testid="stDecoration"] {visibility: hidden !important;}
+    /* 1. Aniquilar el encabezado completo (Avatar, GitHub y Menú) */
+    header {visibility: hidden !important; display: none !important;}
+    [data-testid="stHeader"] {display: none !important;}
+    [data-testid="stToolbar"] {display: none !important;}
     
-    /* 2. Ocultar el pie de página predeterminado de Streamlit */
-    footer {visibility: hidden !important;}
-    [data-testid="stFooter"] {visibility: hidden !important;}
+    /* 2. Aniquilar botón de Deploy */
+    .stAppDeployButton {display: none !important;}
     
-    /* 3. Ocultar el botón de 'Deploy' y Manage app */
-    .stDeployButton {display: none !important;}
+    /* 3. Aniquilar el footer */
+    footer {display: none !important;}
+    [data-testid="stFooter"] {display: none !important;}
     
-    /* 4. Ocultar las insignias flotantes de 'Hosted by Streamlit' y 'Created by' */
-    .viewerBadge_container__1QSob {display: none !important;}
-    .viewerBadge_link__1S137 {display: none !important;}
-    div[class^="viewerBadge_"] {display: none !important;}
+    /* 4. MISIL DIRECTO A LOS ENLACES (Busca cualquier link hacia tu repo y lo borra) */
+    a[href*="github.com/armtemperantia"] {display: none !important; opacity: 0 !important; pointer-events: none !important;}
+    a[href*="streamlit.io"] {display: none !important; opacity: 0 !important; pointer-events: none !important;}
     
-    /* 5. Ocultar cualquier enlace a la nube de Streamlit */
-    a[href^="https://streamlit.io/cloud"] {display: none !important;}
+    /* 5. Cazar la burbuja flotante por título o clase dinámica */
+    div[title*="View source"] {display: none !important;}
+    div[title*="Hosted on"] {display: none !important;}
+    [class*="viewerBadge"] {display: none !important;}
     </style>
     """, unsafe_allow_html=True)
-# ----------------------------------------------
+# --------------------------------------------------------------
 
 # --- 2. DICCIONARIO DE CÓDIGOS POSTALES ---
 def obtener_estado_por_cp(cp):
