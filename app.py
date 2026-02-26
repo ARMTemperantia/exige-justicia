@@ -428,7 +428,23 @@ if submit_button:
                         st.code(cuerpo_masivo_dip, language=None)
                         st.markdown("**3. Enviar automáticamente:**")
                         st.markdown(generar_botones_webmail(cadena_correos_dip, asunto_masivo_dip, cuerpo_masivo_dip), unsafe_allow_html=True)
-                        
+
+                        # --- Botón de honor (mismo flag que senadores: solo cuenta una vez) ---
+                        st.markdown("---")
+                        if not st.session_state.confirmacion_registrada:
+                            if st.button("✅ ¡Ya envié mi correo! Quiero que cuente", key="confirmar_envio_dip", type="primary"):
+                                total_confirmados = hit_contador(CLAVE_CONFIRMADOS)
+                                if total_confirmados is not None:
+                                    st.session_state.total_confirmados       = total_confirmados
+                                    st.session_state.confirmacion_registrada = True
+                                    st.success(f"🎉 ¡Gracias! Eres la persona número **{total_confirmados:,}** en confirmar su acción. ¡Tu voz cuenta!")
+                                    st.balloons()
+                                else:
+                                    st.session_state.confirmacion_registrada = True
+                                    st.success("🎉 ¡Gracias! Tu acción ha sido registrada.")
+                        else:
+                            st.success("✅ Ya confirmaste tu participación. ¡Gracias por actuar!")
+
                         with st.expander(f"Ver contacto individual — {len(diputados_filtrados)} Diputados de {estado_detectado}"):
                             for _, row in diputados_filtrados.iterrows():
                                 dip_nombre_crudo              = str(row.get('Nombre', ''))
