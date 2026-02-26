@@ -21,11 +21,11 @@ st.markdown("""
     footer {display: none !important;}
     [data-testid="stFooter"] {display: none !important;}
     
-    /* 4. MISIL DIRECTO A LOS ENLACES (Busca cualquier link hacia tu repo y lo borra) */
+    /* 4. MISIL DIRECTO A LOS ENLACES */
     a[href*="github.com/armtemperantia"] {display: none !important; opacity: 0 !important; pointer-events: none !important;}
     a[href*="streamlit.io"] {display: none !important; opacity: 0 !important; pointer-events: none !important;}
     
-    /* 5. Cazar la burbuja flotante por título o clase dinámica */
+    /* 5. Cazar la burbuja flotante */
     div[title*="View source"] {display: none !important;}
     div[title*="Hosted on"] {display: none !important;}
     [class*="viewerBadge"] {display: none !important;}
@@ -204,16 +204,25 @@ if submit_button:
             st.header("🏛️ CÁMARA DE SENADORES")
             
             if not df_senadores.empty and 'Estado' in df_senadores.columns:
-                senadores_filtrados = df_senadores[df_senadores['Estado'].str.contains(estado_detectado, case=False, na=False)]
-                
+
+                # --- FIX: Incluir senadores de Lista Nacional ---
+                condicion_estado = df_senadores['Estado'].str.contains(estado_detectado, case=False, na=False)
+                condicion_lista_nacional = df_senadores['Estado'].str.contains('Lista Nacional', case=False, na=False)
+                senadores_filtrados = df_senadores[condicion_estado | condicion_lista_nacional]
+                # ------------------------------------------------
+
                 if senadores_filtrados.empty:
                     st.info(f"No hay senadores registrados para {estado_detectado}.")
                 else:
+                    # Conteo separado para el subheader
+                    sen_estado = senadores_filtrados[~senadores_filtrados['Estado'].str.contains('Lista Nacional', case=False, na=False)]
+                    sen_nacionales = senadores_filtrados[senadores_filtrados['Estado'].str.contains('Lista Nacional', case=False, na=False)]
+
                     correos_senadores = [str(row.get('senator_details_email', '')).strip() for _, row in senadores_filtrados.iterrows() if str(row.get('senator_details_email', '')).strip() and str(row.get('senator_details_email', '')).lower() != 'nan']
                     cadena_correos_sen = ",".join(correos_senadores)
                     
                     if correos_senadores:
-                        st.subheader(f"🔥 Envío Masivo ({len(senadores_filtrados)} Senadores)")
+                        st.subheader(f"🔥 Envío Masivo ({len(sen_estado)} de {estado_detectado} + {len(sen_nacionales)} Lista Nacional)")
                         asunto_masivo_sen = "Petición ciudadana urgente: Rechazo a la Ley de Violencia Vicaria"
                         cuerpo_masivo_sen = f"Estimados Senadores y Senadoras por el estado de {estado_detectado},\n\nEspero que este mensaje les encuentre muy bien. Me dirijo a ustedes en mi calidad de ciudadano(a) de su estado.\n\nReconociendo su labor en la Cámara Alta y su participación en las comisiones legislativas, les solicito de la manera más respetuosa su intervención conjunta para que NO se apruebe (y se promueva la derogación) de la llamada legislación sobre violencia vicaria.\n\nAprobar una legislación que tipifica delitos de manera asimétrica, excluyendo a los hombres de la posibilidad de denunciar y acceder a la misma protección, nos devuelve a la figura del 'derecho penal de autor', vulnerando la igualdad ante la ley consagrada en nuestra Constitución.\n\nLes solicito que desde el Senado se vote en contra de medidas que comprometan la certidumbre jurídica de nuestro país.\n\nAtentamente,\n{nombre}\nC.P. {cp}"
                         
@@ -232,6 +241,10 @@ if submit_button:
                                 nombre_natural, saludo_sen, etiqueta_sen = formatear_y_obtener_saludo(sen_nombre_crudo, "Senador")
                                 sen_correo = str(row.get('senator_details_email', '')).strip()
                                 sen_comisiones = str(row.get('Comisiones', 'diversas comisiones legislativas'))
+
+                                # Etiqueta de origen del senador
+                                es_lista_nacional = 'lista nacional' in str(row.get('Estado', '')).lower()
+                                origen_sen = "🌐 Lista Nacional" if es_lista_nacional else f"📍 {estado_detectado}"
                                 
                                 tiene_correo_sen = bool(sen_correo and sen_correo.lower() != 'nan')
                                 pronombre_sen = "Esta" if etiqueta_sen == "Senadora" else "Este"
@@ -239,7 +252,7 @@ if submit_button:
                                 cuerpo_ind_sen = f"{saludo_sen} {nombre_natural},\n\nComo representante por el estado de {estado_detectado} y desde su importante labor como integrante de las comisiones de {sen_comisiones}, me dirijo a usted con profunda preocupación ciudadana.\n\nLe solicito respetuosamente su voto en contra (y la promoción de la derogación) de la legislación sobre violencia vicaria. Esta ley tipifica delitos de manera asimétrica, aplicando un 'derecho penal de autor' que castiga a la persona por su sexo y vulnera la igualdad ante la ley garantizada por nuestra Constitución.\n\nConfío en su compromiso con una justicia equitativa para todos los ciudadanos.\n\nAtentamente,\n{nombre}\nC.P. {cp}"
                                 
                                 st.markdown(f"**{etiqueta_sen} {nombre_natural}**")
-                                st.caption(f"🏛️ Comisiones: {sen_comisiones}")
+                                st.caption(f"{origen_sen} | 🏛️ Comisiones: {sen_comisiones}")
                                 
                                 col_email, col_tel = st.columns(2)
                                 with col_email:
