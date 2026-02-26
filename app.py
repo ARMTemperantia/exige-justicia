@@ -25,26 +25,28 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# --- 2. CONTADOR DE IMPACTO ---
-def obtener_contador():
-    """Obtiene el valor actual del contador sin incrementarlo."""
+# --- 2. CONTADORES DE IMPACTO ---
+BASE_URL = "https://countapi.mileshilliard.com/api/v1/hit"
+
+def hit_contador(nombre_clave):
+    """Llama a la API y devuelve el nuevo valor. Silencia cualquier error."""
     try:
-        url = "https://api.countapi.xyz/get/exige-justicia-mx/busquedas"
-        with urllib.request.urlopen(url, timeout=5) as r:
-            data = json.loads(r.read())
-            return data.get("value", 0)
+        with urllib.request.urlopen(f"{BASE_URL}/{nombre_clave}", timeout=5) as r:
+            return int(json.loads(r.read()).get("value", 0))
     except:
         return None
 
-def incrementar_contador():
-    """Incrementa el contador y devuelve el nuevo valor."""
-    try:
-        url = "https://api.countapi.xyz/hit/exige-justicia-mx/busquedas"
-        with urllib.request.urlopen(url, timeout=5) as r:
-            data = json.loads(r.read())
-            return data.get("value", 0)
-    except:
-        return None
+# Claves de los dos contadores
+CLAVE_CONFIRMADOS = "exige-justicia-mx-confirmados"  # Público:  usuario confirmó envío
+CLAVE_INTENTOS    = "exige-justicia-mx-intentos"     # Privado:  clic en botón webmail
+
+# Inicializar session_state
+if "total_confirmados"       not in st.session_state:
+    st.session_state.total_confirmados       = None
+if "confirmacion_registrada" not in st.session_state:
+    st.session_state.confirmacion_registrada = False
+if "intento_registrado"      not in st.session_state:
+    st.session_state.intento_registrado      = False
 
 # --- 3. DICCIONARIO DE CÓDIGOS POSTALES ---
 def obtener_estado_por_cp(cp):
@@ -147,8 +149,8 @@ def generar_botones_webmail(destinatarios, asunto, cuerpo):
 st.title("✉️ Exige Justicia: Contacta a tus Representantes")
 st.markdown("Pide a los Legisladores de tu estado que voten en contra de la Ley de Violencia Vicaria y el Derecho Penal de Autor.")
 
-# --- BANNER CONTADOR DE IMPACTO ---
-total = obtener_contador()
+# --- BANNER CONTADOR DE IMPACTO (usa confirmaciones públicas) ---
+total = st.session_state.total_confirmados
 if total is not None:
     st.markdown(
         f"""
@@ -157,7 +159,7 @@ if total is not None:
             <span style="font-size: 2em;">🔥</span>
             <div>
                 <span style="color: #e94560; font-size: 1.6em; font-weight: bold;">{total:,}</span>
-                <span style="color: #ffffff; font-size: 1em;"> ciudadanos ya han buscado a sus representantes.</span><br>
+                <span style="color: #ffffff; font-size: 1em;"> ciudadanos ya confirmaron haber enviado su correo.</span><br>
                 <span style="color: #aaaaaa; font-size: 0.8em;">¡Únete y exige justicia hoy!</span>
             </div>
         </div>
@@ -223,12 +225,12 @@ if submit_button:
         if not estado_detectado:
             st.warning("⚠️ No pudimos identificar el estado con ese código postal. Verifica que sea válido.")
         else:
-            # Incrementar contador al encontrar legisladores exitosamente
-            nuevo_total = incrementar_contador()
+            # Métrica privada: registrar intento (clic en Buscar) — solo una vez por sesión
+            if not st.session_state.intento_registrado:
+                hit_contador(CLAVE_INTENTOS)
+                st.session_state.intento_registrado = True
 
             st.success(f"📍 Detectamos que votas en: **{estado_detectado}**")
-            if nuevo_total is not None:
-                st.info(f"🔥 ¡Eres la persona número **{nuevo_total:,}** en usar esta herramienta!")
 
             # ==========================================
             # SECCIÓN 1: CÁMARA DE SENADORES
@@ -271,6 +273,22 @@ if submit_button:
                         st.code(cuerpo_masivo_sen, language=None)
                         st.markdown("**3. Enviar automáticamente:**")
                         st.markdown(generar_botones_webmail(cadena_correos_sen, asunto_masivo_sen, cuerpo_masivo_sen), unsafe_allow_html=True)
+
+                    # --- Botón de honor: confirmación pública ---
+                    st.markdown("---")
+                    if not st.session_state.confirmacion_registrada:
+                        if st.button("✅ ¡Ya envié mi correo! Quiero que cuente", key="confirmar_envio", type="primary"):
+                            total_confirmados = hit_contador(CLAVE_CONFIRMADOS)
+                            if total_confirmados is not None:
+                                st.session_state.total_confirmados       = total_confirmados
+                                st.session_state.confirmacion_registrada = True
+                                st.success(f"🎉 ¡Gracias! Eres la persona número **{total_confirmados:,}** en confirmar su acción. ¡Tu voz cuenta!")
+                                st.balloons()
+                            else:
+                                st.session_state.confirmacion_registrada = True
+                                st.success("🎉 ¡Gracias! Tu acción ha sido registrada.")
+                    else:
+                        st.success("✅ Ya confirmaste tu participación. ¡Gracias por actuar!")
 
                     # --- Expander 1: Senadores del estado ---
                     with st.expander(f"Ver contacto individual — {len(senadores_estado)} Senadores de {estado_detectado}"):
